@@ -1,0 +1,57 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main, staging]
+
+env:
+  DEPLOY_PATH_PRODUCTION: /opt/ebilling
+  DEPLOY_PATH_STAGING: /opt/ebilling-staging
+
+jobs:
+  deploy:
+    name: Deploy (${{ github.ref_name }})
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        id: env
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "DEPLOY_PATH=/opt/ebilling" >> $GITHUB_OUTPUT
+            echo "COMPOSE_FILE=docker-compose.yml" >> $GITHUB_OUTPUT
+            echo "ENV=production" >> $GITHUB_OUTPUT
+          else
+            echo "DEPLOY_PATH=/opt/ebilling-staging" >> $GITHUB_OUTPUT
+            echo "COMPOSE_FILE=docker-compose.yml -f docker-compose.staging.yml" >> $GITHUB_OUTPUT
+            echo "ENV=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -e
+
+            echo "🌐 Deploying ${{ steps.env.outputs.ENV }}..."
+            cd ${{ steps.env.outputs.DEPLOY_PATH }}
+            git pull origin ${{ github.ref_name }}
+
+            echo "🐳 Building Docker images..."
+            docker compose -f ${{ steps.env.outputs.COMPOSE_FILE }} build --no-cache
+
+            echo "🔄 Restarting services..."
+            docker compose -f ${{ steps.env.outputs.COMPOSE_FILE }} down
+            docker compose -f ${{ steps.env.outputs.COMPOSE_FILE }} up -d
+
+            echo "🧹 Cleaning up old images..."
+            docker image prune -f
+
+            echo "✅ ${{ steps.env.outputs.ENV }} deployment complete!"

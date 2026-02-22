@@ -1,0 +1,44 @@
+# Staging overrides
+# Runs on different ports to avoid conflict with production
+
+services:
+  app:
+    container_name: ebilling-staging-app
+
+  web:
+    container_name: ebilling-staging-web
+    ports:
+      - "8080:80"
+
+  ssr:
+    container_name: ebilling-staging-ssr
+
+  db:
+    container_name: ebilling-staging-db
+    environment:
+      POSTGRES_DB: ebilling_staging
+    ports:
+      - "5433:5432"
+
+  redis:
+    container_name: ebilling-staging-redis
+    ports:
+      - "6380:6379"
+
+  queue:
+    container_name: ebilling-staging-queue
+
+  scheduler:
+    container_name: ebilling-staging-scheduler
+
+volumes:
+  db-data:
+    name: ebilling-staging-db
+  redis-data:
+    name: ebilling-staging-redis
+  app-storage:
+    name: ebilling-staging-storage
+
+networks:
+  ebilling:
+    name: ebilling-staging
