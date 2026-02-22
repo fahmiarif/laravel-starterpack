@@ -1,0 +1,150 @@
+services:
+  # ──────────────────────────────
+  # PHP Application (PHP-FPM)
+  # ──────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ebilling-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+    env_file:
+      - .env
+    volumes:
+      - app-storage:/var/www/html/storage
+    networks:
+      - ebilling
+
+  # ──────────────────────────────
+  # Nginx Web Server
+  # ──────────────────────────────
+  web:
+    image: nginx:1.27-alpine
+    container_name: ebilling-web
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "${APP_PORT:-80}:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - app-storage:/var/www/html/storage:ro
+    networks:
+      - ebilling
+
+  # ──────────────────────────────
+  # Inertia SSR Server (Node.js)
+  # ──────────────────────────────
+  ssr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ebilling-ssr
+    restart: unless-stopped
+    entrypoint: ["node", "bootstrap/ssr/ssr.mjs"]
+    depends_on:
+      - app
+    networks:
+      - ebilling
+
+  # ──────────────────────────────
+  # PostgreSQL Database
+  # ──────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: ebilling-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-ebilling}
+      POSTGRES_USER: ${DB_USERNAME:-ebilling}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT_FORWARD:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-ebilling}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ebilling
+
+  # ──────────────────────────────
+  # Redis (Cache, Session, Queue)
+  # ──────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: ebilling-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ebilling
+
+  # ──────────────────────────────
+  # Queue Worker
+  # ──────────────────────────────
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ebilling-queue
+    restart: unless-stopped
+    entrypoint: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--max-time=3600"]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - app-storage:/var/www/html/storage
+    networks:
+      - ebilling
+
+  # ──────────────────────────────
+  # Task Scheduler
+  # ──────────────────────────────
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ebilling-scheduler
+    restart: unless-stopped
+    entrypoint: ["php", "artisan", "schedule:work"]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - app-storage:/var/www/html/storage
+    networks:
+      - ebilling
+
+volumes:
+  db-data:
+  redis-data:
+  app-storage:
+
+networks:
+  ebilling:
+    driver: bridge

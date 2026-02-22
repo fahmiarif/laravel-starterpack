@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+vendor
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea
+.vscode
+.gemini
+.agent
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+tests
+phpunit.xml
+.phpunit.cache
+
+# Dev tools
+.env
+.env.local
+docker-compose.override.yml
+
+# Logs & cache (will be regenerated)
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*
+
+# Documentation
+*.md
+!README.md
+LICENSE
