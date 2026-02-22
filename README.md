@@ -1,6 +1,6 @@
-# E-Billing
+# Starter Pack Laravel 12 + React 19 + Inertia.js + ShadCN UI
 
-A modern, full-stack billing management system built with **Laravel 12**, **React 19**, and **Inertia.js**. Features a dynamic role-based admin panel with drag-and-drop menu management, user administration, and a polished ShadCN UI.
+A modern, full-stack starter pack for Laravel 12 with React 19, Inertia.js, and ShadCN UI.
 
 ---
 
@@ -47,8 +47,8 @@ A modern, full-stack billing management system built with **Laravel 12**, **Reac
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/ebilling.git
-cd ebilling
+git clone https://github.com/your-org/laravel-starterpack.git
+cd laravel-starterpack
 ```
 
 ### 2. Install Dependencies
@@ -112,7 +112,7 @@ This concurrently starts:
 ## 📁 Project Structure
 
 ```
-ebilling/
+laravel-starterpack/
 ├── app/
 │   ├── Enums/                  # UserRole enum
 │   ├── Http/

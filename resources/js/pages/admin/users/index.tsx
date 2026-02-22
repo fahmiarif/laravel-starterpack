@@ -12,6 +12,12 @@ import { User, UserPaginationData } from "@/types/admin/user"
 import { UserFormDialog } from "@/components/admin/user-form-dialog"
 import { getColumns } from "./columns"
 import { ConfirmDialog } from "@/components/confirm-dialog"
+import { BreadcrumbItem } from "@/types"
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'User Management', href: '/admin/users' },
+];
 
 interface UserIndexProps {
     users: UserPaginationData
@@ -78,7 +84,7 @@ export default function Index({ users: initialUsers, filters, roles }: UserIndex
     const usersData = data || initialUsers
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="User Management" />
             <div className="flex items-center justify-between">
                 <Heading title="User Management" description="Manage system users and their roles." />

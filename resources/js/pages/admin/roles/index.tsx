@@ -12,6 +12,12 @@ import { Role, RoleIndexProps } from "@/types/admin/role"
 import { RoleFormDialog } from "@/components/admin/role-form-dialog"
 import { getColumns } from "./columns"
 import { ConfirmDialog } from "@/components/confirm-dialog"
+import { BreadcrumbItem } from "@/types"
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Role Management', href: '/admin/roles' },
+];
 
 export default function Index({ roles: initialRoles, all_permissions, filters }: RoleIndexProps) {
     const [params, setParams] = React.useState({
@@ -64,7 +70,7 @@ export default function Index({ roles: initialRoles, all_permissions, filters }:
     const rolesData = data || initialRoles
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Role Management" />
             <div className="flex items-center justify-between">
                 <Heading title="Role Management" description="Manage system roles and their assigned permissions." />

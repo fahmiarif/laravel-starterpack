@@ -29,6 +29,12 @@ import {
     useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { BreadcrumbItem } from '@/types';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Menu Management', href: '/admin/menus' },
+];
 
 interface SortableMenuRowProps {
     menu: Menu;
@@ -241,7 +247,7 @@ export default function MenuIndex({ roles }: { roles: { id: number; name: string
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Menu Management" />
 
             <div className="flex items-center justify-between mb-6">

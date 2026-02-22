@@ -73,7 +73,7 @@ class MenuService
                 'url' => $data['url'] ?? null,
                 'icon' => $data['icon'] ?? null,
                 'order' => $data['order'] ?? 0,
-                'is_active' => $data['is_active'] ?? true,
+                'is_active' => (bool) ($data['is_active'] ?? true),
             ]);
 
             $menu->save();
